@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmartTag — Panel de control</title>
+<style>
+:root{
+  --bg:#f3faf5; --card:#ffffff; --ink:#1f2a37; --muted:#667a6d; --line:#e1eee5;
+  --brand:#15803d; --brand2:#22c55e;
+  --ok:#16a34a; --ok-bg:#e8f8ee;
+  --warn:#d97706; --warn-bg:#fff4dc;
+  --busq:#ea580c; --busq-bg:#ffeadb;
+  --lost:#dc2626; --lost-bg:#fde8e8;
+  --none:#8b97a8; --none-bg:#eef2f7;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Nunito","Segoe UI",system-ui,-apple-system,Arial,sans-serif}
+.hero{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;padding:28px 18px 70px}
+.hero-in{max-width:980px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.hero h1{margin:0;font-size:28px;font-weight:900}
+.hero p{margin:4px 0 0;opacity:.92;font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.22);padding:8px 14px;border-radius:99px;font-size:13px;font-weight:700;max-width:100%}
+.pill .dot{width:9px;height:9px;border-radius:50%;background:#7cffb2;flex-shrink:0}
+.pill.error .dot{background:#ffb4b4}
+.wrap{max-width:980px;margin:-46px auto 0;padding:0 16px 60px;position:relative;z-index:2}
+.resumen{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.chip{background:var(--card);border-radius:16px;padding:12px 18px;box-shadow:0 3px 10px rgba(20,80,50,.09);font-size:12.5px;color:var(--muted);font-weight:700;min-width:110px}
+.chip b{display:block;font-size:24px;color:var(--ink);font-weight:900;line-height:1.2}
+.banner{background:linear-gradient(135deg,#ef4444,#f97316);color:#fff;border-radius:16px;padding:16px 20px;margin-bottom:18px;box-shadow:0 6px 18px rgba(239,68,68,.3);animation:pulso 1.5s ease-in-out infinite}
+.banner .it{font-weight:800;font-size:16px}
+.banner .det{font-weight:600;font-size:13px;opacity:.95;margin-top:3px}
+.banner hr{border:none;border-top:1px solid rgba(255,255,255,.35);margin:10px 0}
+@keyframes pulso{0%,100%{box-shadow:0 6px 18px rgba(239,68,68,.3)}50%{box-shadow:0 6px 26px rgba(239,68,68,.6)}}
+.barra-sup{display:flex;justify-content:space-between;align-items:center;margin:6px 2px 14px}
+.barra-sup h2{margin:0;font-size:19px;font-weight:900}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:800;background:var(--brand);color:#fff;transition:transform .08s,opacity .15s}
+button:hover{opacity:.92}
+button:active{transform:scale(.97)}
+button.sec{background:#e3f4e9;color:#1d6b3f}
+button.pel{background:#fde8e8;color:var(--lost)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+.est-ok{--c:var(--ok);--cbg:var(--ok-bg)}
+.est-warn{--c:var(--warn);--cbg:var(--warn-bg)}
+.est-busq{--c:var(--busq);--cbg:var(--busq-bg)}
+.est-lost{--c:var(--lost);--cbg:var(--lost-bg)}
+.est-none{--c:var(--none);--cbg:var(--none-bg)}
+.tarjeta{background:var(--card);border-radius:20px;box-shadow:0 5px 16px rgba(20,80,50,.1);padding:18px;border-top:6px solid var(--c)}
+.t-head{display:flex;align-items:center;gap:12px}
+.t-emoji{width:50px;height:50px;border-radius:16px;background:var(--cbg);display:flex;align-items:center;justify-content:center;font-size:27px;flex-shrink:0}
+.t-tit{flex:1;min-width:0}
+.t-nombre{font-weight:900;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-id{font-size:12px;color:var(--muted);font-weight:700}
+.estado{background:var(--cbg);color:var(--c);padding:5px 10px;border-radius:99px;font-size:12px;font-weight:800;white-space:nowrap}
+.t-dist{margin-top:14px;display:flex;align-items:baseline;gap:6px}
+.t-dist .num{font-size:44px;font-weight:900;line-height:1;color:var(--ink)}
+.t-dist .uni{font-size:18px;font-weight:800;color:var(--muted)}
+.t-zona{font-size:32px;font-weight:900;line-height:1.1;margin-top:14px;color:var(--ink)}
+.t-sub{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+.carril{position:relative;height:12px;background:#e6f1e9;border-radius:99px;margin-top:12px;overflow:hidden}
+.relleno{height:100%;border-radius:99px;transition:width .5s}
+.marca{position:absolute;top:0;bottom:0;width:3px;background:#1f2a37;opacity:.55;left:66.67%}
+.leyenda{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);font-weight:700;margin-top:4px}
+.t-fila{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:13px;font-weight:700;color:var(--muted)}
+.senal{display:inline-flex;align-items:flex-end;gap:2px;height:18px}
+.senal i{display:block;width:5px;border-radius:2px;background:#d3e4d8}
+.senal i.on{background:var(--c)}
+.busq{margin-top:12px;background:var(--busq-bg);color:#9a3a08;border-radius:14px;padding:11px 14px;font-weight:800;font-size:14px}
+.busq div{font-weight:700;font-size:13px;margin-top:3px}
+.t-acc{display:flex;gap:8px;margin-top:14px}
+.t-acc button{flex:1;padding:9px 10px;font-size:13px}
+.vacio{background:var(--card);border-radius:20px;padding:34px 20px;text-align:center;color:var(--muted);font-weight:700;box-shadow:0 5px 16px rgba(20,80,50,.08)}
+.pie{text-align:center;color:var(--muted);font-size:12px;margin-top:24px;font-weight:600}
+.overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal{background:#fff;border-radius:22px;padding:22px;width:100%;max-width:420px;max-height:92vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.modal h2{margin:0 0 14px;font-size:20px;font-weight:900}
+.modal label{display:block;font-size:12.5px;font-weight:800;color:var(--muted);margin:12px 0 5px}
+.modal input{width:100%;border:2px solid var(--line);border-radius:12px;padding:10px 12px;font-size:15px;font-family:inherit;font-weight:700;color:var(--ink)}
+.modal input:focus{outline:none;border-color:var(--brand)}
+.emojis{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.emojis button{background:#eaf6ee;font-size:20px;padding:6px 9px;border-radius:10px}
+.emojis button.sel{background:var(--brand);}
+.ayuda{font-size:12px;color:var(--muted);font-weight:600;margin-top:5px;line-height:1.4}
+.errmsg{color:var(--lost);font-size:13px;font-weight:800;margin-top:10px}
+.m-bot{display:flex;gap:10px;margin-top:18px}
+.m-bot button{flex:1}
+.calib-card{background:var(--card);border-radius:20px;box-shadow:0 5px 16px rgba(20,80,50,.10);padding:18px}
+.calib-form{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.calib-form input,.calib-form select{border:2px solid var(--line);border-radius:12px;padding:9px 11px;font-size:14px;font-family:inherit;font-weight:700;color:var(--ink);background:#fff}
+.calib-form input[type=number]{width:105px}
+.ctabla{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px;font-weight:700}
+.ctabla th{text-align:left;color:var(--muted);font-size:12px;padding:6px 8px;border-bottom:2px solid var(--line)}
+.ctabla td{padding:8px;border-bottom:1px solid var(--line)}
+.cres{margin-top:14px;background:#eaf6ee;border-radius:14px;padding:14px;font-weight:700;font-size:14px}
+.cres.mal{background:var(--warn-bg);color:#92400e}
+.cres pre{background:#fff;border-radius:10px;padding:10px;font-size:13px;margin:8px 0;overflow:auto}
+.cres .fila-btn{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+
+body{background:linear-gradient(180deg,#dff3e6 0,#f3fbf5 380px,#f3fbf5 100%) fixed}
+.hero{position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;right:-60px;top:-90px;width:270px;height:270px;border-radius:50%;background:rgba(255,255,255,.13)}
+.hero::after{content:"";position:absolute;right:110px;bottom:-120px;width:210px;height:210px;border-radius:50%;background:rgba(255,255,255,.09)}
+.hero-in{position:relative;z-index:1}
+.chip{display:flex;align-items:center;gap:12px;padding:12px 18px 12px 12px}
+.chip .ci{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.chip.c1 .ci{background:#dbeafe}
+.chip.c2 .ci{background:var(--ok-bg)}
+.chip.c3 .ci{background:#d9f5e3}
+.chip.c4 .ci{background:var(--lost-bg)}
+.okb{background:linear-gradient(135deg,#dcfce7,#c8f3da);border:2px solid #b5eccb;border-radius:20px;padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:14px}
+.okb .big{font-size:36px}
+.okb b{display:block;font-size:17px;color:#14532d}
+.okb span{font-size:13px;color:#2f6b4a;font-weight:700}
+.okb.neutro{background:linear-gradient(135deg,#e8f1fb,#dbe8f6);border-color:#c9dcf0}
+.okb.neutro b{color:#1e3a5f}
+.okb.neutro span{color:#4a6585}
+.tarjeta{background:linear-gradient(180deg,var(--cbg) 0,#fff 42%)}
+.t-emoji{width:56px;height:56px;font-size:30px;background:#fff;box-shadow:0 0 0 4px var(--cbg)}
+.t-zona{color:var(--c)}
+.est-busq .t-emoji{animation:radar 1.6s ease-out infinite}
+@keyframes radar{0%{box-shadow:0 0 0 0 rgba(234,88,12,.55)}100%{box-shadow:0 0 0 18px rgba(234,88,12,0)}}
+.vacio{border:2px dashed #bfe3cb;background:#fbfefc}
+.vacio .e{display:block;font-size:44px;margin-bottom:8px}
+.guia{margin-top:32px}
+.guia h2{font-size:19px;font-weight:900;margin:0 0 12px}
+.guia-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.g{border-radius:18px;padding:14px 16px;font-weight:700;font-size:13px;line-height:1.4;box-shadow:0 3px 10px rgba(20,80,50,.08)}
+.g .gi{font-size:24px}
+.g b{display:block;font-size:15px;margin:4px 0}
+.g1{background:var(--ok-bg);color:#14532d}
+.g2{background:var(--warn-bg);color:#92400e}
+.g3{background:var(--busq-bg);color:#9a3412}
+.g4{background:var(--lost-bg);color:#991b1b}
+.zonas{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center;font-size:12.5px;font-weight:800;color:var(--muted)}
+.zonas span.z{background:#fff;border-radius:99px;padding:7px 14px;box-shadow:0 2px 6px rgba(20,80,50,.08)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1f2a37;color:#fff;padding:11px 20px;border-radius:99px;font-weight:800;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:99}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="hero"><div class="hero-in">
+  <div><h1>🏷️ SmartTag</h1><p><span id="saludo">Hola</span> 👋 · panel de control · se actualiza cada 2 segundos</p></div>
+  <div id="estadoConexion" class="pill"><span class="dot"></span> Conectando...</div>
+</div></div>
+
+<div class="wrap">
+  <div id="resumen" class="resumen"></div>
+  <div id="banner" class="banner" style="display:none"></div>
+  <div id="okBanner" class="okb" style="display:none"></div>
+
+  <div class="barra-sup">
+    <h2>Mis tags</h2>
+    <button id="btnNuevo">➕ Nuevo tag</button>
+  </div>
+  <div id="grid" class="grid"><div class="vacio">Cargando...</div></div>
+  <div class="guia">
+    <h2>🧭 Cómo leerlo</h2>
+    <div class="guia-grid">
+      <div class="g g1"><div class="gi">🟢</div><b>Todo bien</b>El tag está dentro del límite que configuraste.</div>
+      <div class="g g2"><div class="gi">🟡</div><b>Señal débil</b>Se lo escucha, pero con poca fuerza.</div>
+      <div class="g g3"><div class="gi">🟠</div><b>Modo búsqueda</b>Se alejó del límite: transmite más seguido y la tarjeta te dice si vas más caliente o más frío.</div>
+      <div class="g g4"><div class="gi">🔴</div><b>Perdido</b>El Maestro dejó de recibir señal del tag. Es lo único que cuenta como perdido.</div>
+    </div>
+    <div class="zonas">Las zonas dependen del límite de cada tag: <span class="z">Muy cerca · primer tercio</span><span class="z">Cerca · segundo tercio</span><span class="z">Lejos · último tercio hasta el límite</span><span class="z">Fuera de rango · pasó el límite</span></div>
+  </div>
+
+  <div class="barra-sup" style="margin-top:30px">
+    <h2>🎯 Calibración de distancia</h2>
+    <button class="sec" id="btnCalibToggle">Abrir</button>
+  </div>
+  <div id="calibBody" style="display:none">
+    <div class="calib-card">
+      <div class="ayuda" style="font-size:13.5px">
+        Poné el tag a una distancia <b>medida con cinta</b>, con la antena siempre en la misma posición, y tocá <b>Tomar muestras</b>.
+        Repetilo en 4 o 5 distancias entre <b>1 y 10 m</b>. Cada lectura llega según el intervalo del tag (8 segundos en pruebas).
+        Menos de 1 m no es confiable: el RSSI se comporta raro tan cerca.
+      </div>
+      <div class="calib-form">
+        <select id="cTag"></select>
+        <input id="cDist" type="number" step="0.5" min="0.5" placeholder="Distancia (m)">
+        <input id="cN" type="number" min="3" max="30" value="8" title="Cantidad de lecturas">
+        <span class="ayuda" style="margin:0">lecturas</span>
+        <button id="cTomar">Tomar muestras</button>
+      </div>
+      <div id="cEstado" class="ayuda" style="font-size:13.5px"></div>
+      <div id="cTabla"></div>
+      <div id="cResultado"></div>
+    </div>
+  </div>
+
+  <div class="pie">La distancia se calcula a partir del RSSI (la fuerza de la señal LoRa), por eso es aproximada.</div>
+</div>
+
+<div id="overlay" class="overlay" style="display:none"><div class="modal">
+  <h2 id="mTitulo">Editar tag</h2>
+  <label>Nombre (a qué está conectado)</label>
+  <input id="mNombre" maxlength="40" placeholder="Ej: Llaves de casa">
+  <label>Ícono</label>
+  <div class="emojis" id="mEmojis"></div>
+  <input id="mEmoji" maxlength="4" style="width:80px;text-align:center;font-size:20px">
+  <label>Límite de alerta (metros)</label>
+  <input id="mUmbral" type="number" min="1" step="1">
+  <div class="ayuda">Se calcula la distancia a partir del RSSI. Si supera este límite, el tag se considera fuera de rango y arranca el modo búsqueda.</div>
+  <label>ID del tag (el número grabado en el firmware)</label>
+  <input id="mTagId" placeholder="Ej: 1">
+  <div class="ayuda" id="mAviso"></div>
+  <div class="errmsg" id="mError"></div>
+  <div class="m-bot"><button class="sec" id="mCancelar">Cancelar</button><button id="mGuardar">Guardar</button></div>
+</div></div>
+
+<div id="overlayConf" class="overlay" style="display:none"><div class="modal">
+  <h2 id="cTitulo">¿Eliminar?</h2>
+  <div class="ayuda" id="cTexto" style="font-size:14px"></div>
+  <div class="m-bot"><button class="sec" id="cNo">Cancelar</button><button class="pel" id="cSi">Sí, eliminar</button></div>
+</div></div>
+
+<div id="toast"></div>
+
+<script>
+const SUPABASE_URL = "https://giurdrztpcdvzlbgpdpp.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_fXqjSvQLM8_UfIuvy469Cw_m9xmQJTJ";
+
+// Misma fórmula y constantes calibradas que usa el Maestro (receptor_central.ino)
+const VALORES_FIRMWARE = { a: -41.5, n: 3.94 };   // los que tiene hoy el Maestro
+let RSSI_1M = VALORES_FIRMWARE.a;
+let EXPONENTE_PERDIDA = VALORES_FIRMWARE.n;
+try {
+  const g = JSON.parse(localStorage.getItem("calibracion") || "null");
+  if (g && isFinite(g.a) && isFinite(g.n)) { RSSI_1M = g.a; EXPONENTE_PERDIDA = g.n; }
+} catch (e) {}
+const OCULTOS = ["demo_test"];   // tags de prueba que no se muestran acá
+
+function estimar(rssi) {
+  if (rssi === null || rssi === undefined) return null;
+  return Math.pow(10, (RSSI_1M - Number(rssi)) / (10 * EXPONENTE_PERDIDA));
+}
+
+function api(path, opts) {
+  opts = opts || {};
+  return new Promise(function (resolve, reject) {
+    const xhr = new XMLHttpRequest();
+    xhr.open(opts.method || "GET", SUPABASE_URL + "/rest/v1/" + path);
+    xhr.setRequestHeader("apikey", SUPABASE_ANON_KEY);
+    xhr.setRequestHeader("Authorization", "Bearer " + SUPABASE_ANON_KEY);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    if (opts.prefer) xhr.setRequestHeader("Prefer", opts.prefer);
+    xhr.onload = function () {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try { resolve(xhr.responseText ? JSON.parse(xhr.responseText) : null); } catch (e) { reject(e); }
+      } else { reject(new Error("HTTP " + xhr.status + " " + xhr.responseText)); }
+    };
+    xhr.onerror = function () { reject(new Error("No se pudo conectar (red bloqueada o sin internet)")); };
+    xhr.send(opts.body ? JSON.stringify(opts.body) : null);
+  });
+}
+
+const $ = function (id) { return document.getElementById(id); };
+function esc(s) {
+  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  setTimeout(function () { t.classList.remove("show"); }, 2200);
+}
+function haceCuanto(ts) {
+  const s = Math.max(0, Math.floor((Date.now() - new Date(ts).getTime()) / 1000));
+  if (s < 60) return "hace " + s + "s";
+  if (s < 3600) return "hace " + Math.floor(s / 60) + " min";
+  return "hace " + Math.floor(s / 3600) + " h";
+}
+function marcarConexion(ok, msg) {
+  const el = $("estadoConexion");
+  el.className = "pill" + (ok ? "" : " error");
+  el.innerHTML = '<span class="dot"></span> ' + esc(msg);
+}
+
+let tagsData = [];
+let cuentaId = null;
+let editandoId = null;
+let emojiSel = "📦";
+const ultimoEvento = {};
+const ultimaConSenal = {};
+const recientes = {};      // tag -> últimas lecturas con RSSI (para la mediana)
+const vistos = new Set();  // ids de filas ya contadas (se vuelven a pedir cada ciclo)
+
+const ESTADOS = {
+  senal:          { cls: "est-ok",   txt: "Cerca y bien",   ico: "✅" },
+  senal_debil:    { cls: "est-warn", txt: "Señal débil",    ico: "📶" },
+  fuera_de_rango: { cls: "est-busq", txt: "Modo búsqueda",  ico: "🔍" },
+  recuperado:     { cls: "est-ok",   txt: "¡Ya está cerca!", ico: "🎯" },
+  perdido:        { cls: "est-lost", txt: "Perdido",        ico: "📡" },
+  sin_datos:      { cls: "est-none", txt: "Sin datos aún",  ico: "⌛" }
+};
+
+function nivelSenal(rssi) {
+  if (rssi == null) return 0;
+  if (rssi >= -70) return 4;
+  if (rssi >= -85) return 3;
+  if (rssi >= -100) return 2;
+  if (rssi >= -112) return 1;
+  return 0;
+}
+
+function absorber(fila) {
+  const k = String(fila.tag_id);
+  const t = new Date(fila.timestamp).getTime();
+  if (!ultimoEvento[k] || t > new Date(ultimoEvento[k].timestamp).getTime()) ultimoEvento[k] = fila;
+  if (fila.rssi != null && (!ultimaConSenal[k] || t > new Date(ultimaConSenal[k].timestamp).getTime())) ultimaConSenal[k] = fila;
+  if (fila.rssi != null && fila.id != null && !vistos.has(fila.id)) {
+    vistos.add(fila.id);
+    const arr = recientes[k] || (recientes[k] = []);
+    arr.push({ t: t, rssi: Number(fila.rssi) });
+    arr.sort(function (a, b) { return a.t - b.t; });
+    while (arr.length > 5) arr.shift();
+  }
+}
+
+// Mediana de las últimas 3 lecturas: ignora un pico suelto (una lectura que miente)
+function distanciaEstable(k) {
+  const arr = recientes[k];
+  if (!arr || !arr.length) return null;
+  const d = arr.slice(-3).map(function (x) { return estimar(x.rssi); }).sort(function (a, b) { return a - b; });
+  const n = d.length;
+  return n % 2 ? d[(n - 1) / 2] : (d[n / 2 - 1] + d[n / 2]) / 2;
+}
+
+function nombreDe(tagId) {
+  const t = tagsData.find(function (x) { return String(x.tag_id_hardware) === String(tagId); });
+  return t ? (t.nombre || ("Tag " + tagId)) : ("Tag " + tagId);
+}
+
+function renderResumen() {
+  let cerca = 0, lejos = 0;
+  tagsData.forEach(function (t) {
+    const ev = ultimoEvento[String(t.tag_id_hardware)];
+    const e = ev ? ev.evento : "sin_datos";
+    if (e === "fuera_de_rango" || e === "perdido") lejos++;
+    else if (e !== "sin_datos") cerca++;
+  });
+  function chip(ico, num, label, cls, color) {
+    return '<div class="chip ' + cls + '"><div class="ci">' + ico + '</div><div><b' + (color ? ' style="color:' + color + '"' : "") + ">" + num + "</b>" + label + "</div></div>";
+  }
+  $("resumen").innerHTML =
+    chip("🏷️", tagsData.length, "tags", "c1") +
+    chip("✅", cerca, "cerca", "c2", "var(--ok)") +
+    (lejos ? chip("🚨", lejos, "fuera de rango", "c4", "var(--lost)") : chip("🛡️", lejos, "fuera de rango", "c3"));
+}
+
+function renderBanner() {
+  const b = $("banner");
+  const items = [];
+  Object.keys(ultimoEvento).forEach(function (k) {
+    if (OCULTOS.indexOf(k) >= 0) return;
+    const f = ultimoEvento[k];
+    if (f.evento === "fuera_de_rango" || f.evento === "perdido") items.push(f);
+  });
+  const ok = $("okBanner");
+  if (!items.length) {
+    b.style.display = "none";
+    const conDatos = tagsData.filter(function (t) { return ultimoEvento[String(t.tag_id_hardware)]; }).length;
+    if (tagsData.length && conDatos) {
+      ok.className = "okb";
+      ok.innerHTML = '<div class="big">🛡️</div><div><b>Todo en orden</b><span>' +
+        (conDatos === 1 ? "Tu objeto está dentro del rango." : "Tus " + conDatos + " objetos están dentro del rango.") + "</span></div>";
+      ok.style.display = "flex";
+    } else if (tagsData.length) {
+      ok.className = "okb neutro";
+      ok.innerHTML = '<div class="big">📡</div><div><b>Esperando mediciones…</b><span>Cuando el tag transmita, lo vas a ver acá.</span></div>';
+      ok.style.display = "flex";
+    } else { ok.style.display = "none"; }
+    return;
+  }
+  ok.style.display = "none";
+  b.style.display = "block";
+  b.innerHTML = items.map(function (f) {
+    const n = esc(nombreDe(f.tag_id));
+    const perdido = f.evento === "perdido";
+    const tit = perdido ? "📡 ¡" + n + " perdió señal por completo!" : "🔍 ¡" + n + " se alejó del rango permitido!";
+    const det = perdido
+      ? "Sin respuesta del tag — revisar batería o que esté dentro del alcance del LoRa."
+      : "Distancia estimada: " + (f.distancia_actual != null ? esc(f.distancia_actual) : "?") + " m · Se activó el modo búsqueda automáticamente.";
+    return '<div><div class="it">' + tit + '</div><div class="det">' + det + '</div></div>';
+  }).join("<hr>");
+}
+
+function bloqueBusqueda(est, sen) {
+  if (est !== "fuera_de_rango") return "";
+  const t = sen && sen.tendencia;
+  let ico = "🧭", txt = "Midiendo… necesito unas lecturas para saber hacia dónde ir";
+  if (t === "acercandose") { ico = "🔥"; txt = "¡Más caliente! Te estás acercando"; }
+  else if (t === "alejandose") { ico = "❄️"; txt = "Más frío… te estás alejando"; }
+  else if (t === "estable") { ico = "〰️"; txt = "Sin cambios por ahora, probá moverte"; }
+  return '<div class="busq">' + ico + " Modo búsqueda activo<div>" + txt + "</div></div>";
+}
+
+// La distancia por RSSI es aproximada: se muestra como zona, y las zonas dependen del
+// LÍMITE de cada tag (se reparten en tercios). "Perdido" NO sale de la distancia:
+// es solo cuando el Maestro deja de recibir señal del tag.
+function fmtM(n) { return String(Math.round(n * 10) / 10); }
+function zonaDe(d, limite, clave) {
+  if (clave === "perdido") return { txt: "Perdido", sub: "el Maestro dejó de recibir señal del tag" };
+  if (clave === "fuera_de_rango") return { txt: "Fuera de rango", sub: "pasó el límite de " + fmtM(limite) + " m" };
+  if (d == null) return { txt: "—", sub: "" };
+  const f = d / limite;
+  if (f < 1 / 3) return { txt: "Muy cerca", sub: "menos de " + fmtM(limite / 3) + " m" };
+  if (f < 2 / 3) return { txt: "Cerca", sub: "entre " + fmtM(limite / 3) + " y " + fmtM(limite * 2 / 3) + " m" };
+  if (f <= 1) return { txt: "Lejos", sub: "entre " + fmtM(limite * 2 / 3) + " y " + fmtM(limite) + " m" };
+  return { txt: "Lejos", sub: "en el límite de " + fmtM(limite) + " m" };
+}
+
+function renderTarjetas() {
+  const grid = $("grid");
+  if (!tagsData.length) {
+    grid.innerHTML = '<div class="vacio"><span class="e">🏷️</span>Todavía no hay tags.<br>Tocá <b>➕ Nuevo tag</b> para registrar el primero.</div>';
+    return;
+  }
+  grid.innerHTML = tagsData.map(function (tag) {
+    const k = String(tag.tag_id_hardware);
+    const ev = ultimoEvento[k];
+    const sen = ultimaConSenal[k];
+    const clave = ev && ESTADOS[ev.evento] ? ev.evento : (ev ? "senal" : "sin_datos");
+    const est = ESTADOS[clave];
+    const umbral = Number(tag.distancia_alerta) || 15;
+    const suelta = sen ? estimar(sen.rssi) : null;
+    const estable = distanciaEstable(k);
+    const calc = estable != null ? estable : suelta;
+    const zona = zonaDe(calc, umbral, clave);
+    const aprox = calc == null ? null : (calc < 2 ? "menos de 2 m" : "≈ " + Math.round(calc) + " m");
+    let detalle;
+    if (calc == null) detalle = "esperando mediciones";
+    else if (clave === "perdido") detalle = zona.sub + " · última medición " + aprox;
+    else detalle = zona.sub + " · ahora " + aprox + " · lectura suelta: " + (suelta < 2 ? "menos de 2" : Math.round(suelta)) + " m";
+    const pct = calc == null ? 0 : Math.min(100, calc / (umbral * 1.5) * 100);
+    let colorBarra = "var(--ok)";
+    if (calc != null) { if (calc > umbral) colorBarra = "var(--busq)"; else if (calc > umbral * 0.7) colorBarra = "var(--warn)"; }
+    const nivel = nivelSenal(sen ? Number(sen.rssi) : null);
+    let bars = "";
+    for (let i = 0; i < 4; i++) bars += '<i class="' + (i < nivel ? "on" : "") + '" style="height:' + (6 + i * 4) + 'px"></i>';
+    return '<div class="tarjeta ' + est.cls + '">' +
+      '<div class="t-head">' +
+        '<div class="t-emoji">' + esc(tag.emoji || "📦") + '</div>' +
+        '<div class="t-tit"><div class="t-nombre">' + esc(tag.nombre || "(sin nombre)") + '</div><div class="t-id">Tag #' + esc(tag.tag_id_hardware) + '</div></div>' +
+        '<div class="estado">' + est.ico + " " + est.txt + '</div>' +
+      '</div>' +
+      '<div class="t-zona">' + esc(zona.txt) + '</div>' +
+      '<div class="t-sub">' + detalle + '</div>' +
+      '<div class="carril"><div class="relleno" style="width:' + pct + '%;background:' + colorBarra + '"></div><div class="marca"></div></div>' +
+      '<div class="leyenda"><span>0 m</span><span>Límite: ' + umbral + ' m</span></div>' +
+      '<div class="t-fila"><span class="senal">' + bars + '</span><span>' + (sen ? esc(sen.rssi) + " dBm" : "sin señal") + '</span><span style="margin-left:auto">' + (ev ? haceCuanto(ev.timestamp) : "") + '</span></div>' +
+      bloqueBusqueda(clave, sen) +
+      '<div class="t-acc"><button class="sec" data-accion="editar" data-id="' + esc(tag.id) + '">✏️ Editar</button>' +
+      '<button class="pel" data-accion="eliminar" data-id="' + esc(tag.id) + '">🗑️ Eliminar</button></div>' +
+    '</div>';
+  }).join("");
+}
+
+function renderTodo() { renderResumen(); renderBanner(); renderTarjetas(); }
+
+async function cargarTags() {
+  let data;
+  try {
+    data = await api("tags?select=*&order=created_at.asc");
+  } catch (e) {
+    marcarConexion(false, "Error: " + e.message);
+    $("grid").innerHTML = '<div class="vacio">No se pudieron cargar los tags.<br><small>' + esc(e.message) + "</small></div>";
+    return;
+  }
+  marcarConexion(true, "Conectado a Supabase");
+  const conCuenta = (data || []).find(function (t) { return !!t.cuenta_id; });
+  if (conCuenta) cuentaId = conCuenta.cuenta_id;
+  tagsData = (data || []).filter(function (t) { return OCULTOS.indexOf(String(t.tag_id_hardware)) < 0; });
+  llenarSelectTags();
+  renderTodo();
+}
+
+async function actualizarLecturas() {
+  try {
+    const data = await api("historial_ubicaciones?select=*&order=timestamp.desc&limit=200");
+    (data || []).forEach(function (f) { if (OCULTOS.indexOf(String(f.tag_id)) < 0) absorber(f); });
+    renderTodo();
+    procesarCalibracion(data || []);
+  } catch (e) {
+    marcarConexion(false, "Error: " + e.message);
+  }
+}
+
+// ---------- Modal de crear / editar ----------
+const EMOJIS = ["📦", "🔑", "👜", "🎒", "👓", "📱", "💊", "💼", "🧥", "🐶"];
+function pintarEmojis() {
+  $("mEmojis").innerHTML = EMOJIS.map(function (e) {
+    return '<button type="button" data-e="' + e + '" class="' + (e === emojiSel ? "sel" : "") + '">' + e + "</button>";
+  }).join("");
+  $("mEmoji").value = emojiSel;
+}
+$("mEmojis").addEventListener("click", function (ev) {
+  const b = ev.target.closest("button[data-e]"); if (!b) return;
+  emojiSel = b.getAttribute("data-e"); pintarEmojis();
+});
+$("mEmoji").addEventListener("input", function () { emojiSel = $("mEmoji").value || "📦"; });
+
+function abrirModal(tag) {
+  editandoId = tag ? tag.id : null;
+  $("mTitulo").textContent = tag ? "Editar tag" : "Nuevo tag";
+  $("mNombre").value = tag ? (tag.nombre || "") : "";
+  emojiSel = tag ? (tag.emoji || "📦") : "📦";
+  $("mUmbral").value = tag ? (tag.distancia_alerta != null ? tag.distancia_alerta : 15) : 15;
+  $("mTagId").value = tag ? tag.tag_id_hardware : "";
+  $("mAviso").textContent = tag
+    ? "Si cambiás el ID, el historial anterior queda asociado al número viejo, y tenés que grabar el mismo número nuevo en el firmware del tag."
+    : "Es el número que va en #define TAG_ID del firmware del tag.";
+  $("mError").textContent = "";
+  pintarEmojis();
+  $("overlay").style.display = "flex";
+  setTimeout(function () { $("mNombre").focus(); }, 50);
+}
+function cerrarModal() { $("overlay").style.display = "none"; }
+
+$("btnNuevo").addEventListener("click", function () { abrirModal(null); });
+$("mCancelar").addEventListener("click", cerrarModal);
+$("overlay").addEventListener("click", function (e) { if (e.target === $("overlay")) cerrarModal(); });
+
+$("mGuardar").addEventListener("click", async function () {
+  const nombre = $("mNombre").value.trim();
+  const tagId = $("mTagId").value.trim();
+  const umbral = parseFloat($("mUmbral").value);
+  const emoji = ($("mEmoji").value || "📦").trim();
+  if (!nombre) { $("mError").textContent = "Poné un nombre."; return; }
+  if (!tagId) { $("mError").textContent = "Poné el ID del tag."; return; }
+  if (!(umbral > 0)) { $("mError").textContent = "El límite tiene que ser mayor a 0."; return; }
+  try {
+    if (editandoId) {
+      await api("tags?id=eq." + encodeURIComponent(editandoId), { method: "PATCH", prefer: "return=minimal",
+        body: { nombre: nombre, emoji: emoji, distancia_alerta: umbral, tag_id_hardware: tagId } });
+      toast("✓ Cambios guardados");
+    } else {
+      if (!cuentaId) { $("mError").textContent = "No se pudo detectar la cuenta (cargá la lista sin errores primero)."; return; }
+      await api("tags", { method: "POST", prefer: "return=minimal",
+        body: { nombre: nombre, emoji: emoji, distancia_alerta: umbral, tag_id_hardware: tagId, cuenta_id: cuentaId, activo: true } });
+      toast("✓ Tag creado");
+    }
+    cerrarModal();
+    cargarTags();
+  } catch (e) {
+    $("mError").textContent = "Error: " + e.message;
+  }
+});
+
+// ---------- Eliminar (con confirmación) ----------
+let idParaEliminar = null;
+$("cNo").addEventListener("click", function () { $("overlayConf").style.display = "none"; });
+$("cSi").addEventListener("click", async function () {
+  $("overlayConf").style.display = "none";
+  try {
+    await api("tags?id=eq." + encodeURIComponent(idParaEliminar), { method: "DELETE", prefer: "return=minimal" });
+    toast("🗑️ Tag eliminado");
+    cargarTags();
+  } catch (e) { toast("Error al eliminar: " + e.message); }
+});
+
+$("grid").addEventListener("click", function (ev) {
+  const b = ev.target.closest("button[data-accion]"); if (!b) return;
+  const id = b.getAttribute("data-id");
+  const tag = tagsData.find(function (t) { return String(t.id) === String(id); });
+  if (!tag) return;
+  if (b.getAttribute("data-accion") === "editar") abrirModal(tag);
+  else {
+    idParaEliminar = tag.id;
+    $("cTitulo").textContent = "¿Eliminar \"" + (tag.nombre || "este tag") + "\"?";
+    $("cTexto").textContent = "Se borra de la base de datos y también desaparece de la app.";
+    $("overlayConf").style.display = "flex";
+  }
+});
+
+// ---------- Calibración ----------
+const puntos = [];   // { d, rssi (mediana), n, min, max }
+let calib = null;    // toma en curso
+
+function mediana(arr) {
+  const a = arr.slice().sort(function (x, y) { return x - y; });
+  const n = a.length;
+  return n % 2 ? a[(n - 1) / 2] : (a[n / 2 - 1] + a[n / 2]) / 2;
+}
+
+function llenarSelectTags() {
+  const sel = $("cTag"); if (!sel) return;
+  const actual = sel.value;
+  sel.innerHTML = tagsData.map(function (t) {
+    return '<option value="' + esc(t.tag_id_hardware) + '">' + esc(t.emoji || "📦") + " " + esc(t.nombre || "Tag") + " (#" + esc(t.tag_id_hardware) + ")</option>";
+  }).join("");
+  if (actual) sel.value = actual;
+}
+
+$("btnCalibToggle").addEventListener("click", function () {
+  const b = $("calibBody");
+  const abrir = b.style.display === "none";
+  b.style.display = abrir ? "block" : "none";
+  $("btnCalibToggle").textContent = abrir ? "Cerrar" : "Abrir";
+  renderCalib();
+});
+
+$("cTomar").addEventListener("click", function () {
+  const tagId = $("cTag").value;
+  const d = parseFloat($("cDist").value);
+  const n = parseInt($("cN").value, 10) || 8;
+  if (!tagId) { toast("Elegí un tag"); return; }
+  if (!(d > 0)) { toast("Poné la distancia en metros"); return; }
+  calib = { tagId: String(tagId), d: d, n: n, excluir: new Set(vistos), valores: [] };
+  $("cTomar").disabled = true;
+  mostrarProgreso();
+});
+
+function mostrarProgreso() {
+  if (!calib) { $("cEstado").textContent = ""; return; }
+  $("cEstado").innerHTML = "⏳ Midiendo a <b>" + calib.d + " m</b>: " + calib.valores.length + " / " + calib.n +
+    " lecturas. No muevas el tag ni la antena.";
+}
+
+function procesarCalibracion(data) {
+  if (!calib) return;
+  data.forEach(function (f) {
+    if (String(f.tag_id) !== calib.tagId || f.rssi == null || f.id == null || calib.excluir.has(f.id)) return;
+    calib.excluir.add(f.id);
+    calib.valores.push(Number(f.rssi));
+  });
+  mostrarProgreso();
+  if (calib.valores.length >= calib.n) {
+    const v = calib.valores;
+    puntos.push({ d: calib.d, rssi: mediana(v), n: v.length, min: Math.min.apply(null, v), max: Math.max.apply(null, v) });
+    puntos.sort(function (a, b) { return a.d - b.d; });
+    calib = null;
+    $("cTomar").disabled = false;
+    $("cEstado").textContent = "✓ Punto guardado. Mové el tag a otra distancia y repetí.";
+    renderCalib();
+  }
+}
+
+function regresion(pts) {
+  const xs = pts.map(function (p) { return Math.log10(p.d); });
+  const ys = pts.map(function (p) { return p.rssi; });
+  const n = pts.length;
+  const mx = xs.reduce(function (a, b) { return a + b; }, 0) / n;
+  const my = ys.reduce(function (a, b) { return a + b; }, 0) / n;
+  let sxy = 0, sxx = 0, syy = 0;
+  for (let i = 0; i < n; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) * (xs[i] - mx); syy += (ys[i] - my) * (ys[i] - my); }
+  if (sxx === 0) return null;
+  const m = sxy / sxx;
+  const b = my - m * mx;
+  const r2 = syy === 0 ? 1 : (sxy * sxy) / (sxx * syy);
+  return { a: b, n: -m / 10, r2: r2 };
+}
+
+function renderCalib() {
+  if ($("calibBody").style.display === "none") return;
+  if (!puntos.length) { $("cTabla").innerHTML = ""; $("cResultado").innerHTML = ""; return; }
+  const reg = puntos.length >= 2 ? regresion(puntos) : null;
+  let filas = puntos.map(function (p, i) {
+    const est = reg ? Math.pow(10, (reg.a - p.rssi) / (10 * reg.n)) : null;
+    return "<tr><td>" + p.d + " m</td><td>" + p.rssi.toFixed(1) + " dBm</td><td>" + p.min + " a " + p.max + "</td><td>" + p.n +
+      "</td><td>" + (est != null ? est.toFixed(1) + " m" : "—") + '</td><td><button class="pel" data-borrar="' + i + '" style="padding:5px 10px;font-size:12px">Borrar</button></td></tr>';
+  }).join("");
+  $("cTabla").innerHTML = '<table class="ctabla"><tr><th>Distancia real</th><th>RSSI (mediana)</th><th>Rango visto</th><th>Lecturas</th><th>La fórmula daría</th><th></th></tr>' + filas + "</table>";
+
+  let res = "";
+  if (!reg) {
+    res = '<div class="cres">Cargá al menos <b>2 distancias distintas</b> (mejor 4 o 5) para calcular.</div>';
+  } else {
+    const rara = !(reg.n > 1.5 && reg.n < 6) || reg.r2 < 0.8;
+    res = '<div class="cres' + (rara ? " mal" : "") + '">' +
+      "RSSI a 1 m: <b>" + reg.a.toFixed(1) + " dBm</b> · Exponente: <b>" + reg.n.toFixed(2) + "</b> · Ajuste (R²): <b>" + reg.r2.toFixed(2) + "</b>" +
+      (rara ? "<br>⚠️ Estos números no se ven físicamente razonables (el exponente suele estar entre 2 y 5 y el R² por encima de 0,8). Probá borrar los puntos de menos de 1 m, revisá las antenas o repetí las tomas." : "") +
+      "<pre>#define RSSI_1M            " + reg.a.toFixed(1) + "\n#define EXPONENTE_PERDIDA  " + reg.n.toFixed(2) + "</pre>" +
+      '<div class="ayuda">Esas dos líneas van en receptor_central.ino (el Maestro). La web las usa apenas toques "Usar en esta página".</div>' +
+      '<div class="fila-btn"><button id="cUsar">Usar en esta página</button><button class="sec" id="cRestaurar">Volver a los del firmware</button></div></div>';
+  }
+  res += '<div class="ayuda" style="margin-top:8px">Constantes que usa esta página ahora: RSSI a 1 m = <b>' + RSSI_1M.toFixed(1) + "</b>, exponente = <b>" + EXPONENTE_PERDIDA.toFixed(2) + "</b>. El Maestro usa las suyas hasta que actualices el firmware.</div>";
+  $("cResultado").innerHTML = res;
+
+  const u = $("cUsar");
+  if (u) u.addEventListener("click", function () {
+    RSSI_1M = reg.a; EXPONENTE_PERDIDA = reg.n;
+    try { localStorage.setItem("calibracion", JSON.stringify({ a: reg.a, n: reg.n })); } catch (e) {}
+    toast("✓ Constantes aplicadas en esta página"); renderTodo(); renderCalib();
+  });
+  const r = $("cRestaurar");
+  if (r) r.addEventListener("click", function () {
+    RSSI_1M = VALORES_FIRMWARE.a; EXPONENTE_PERDIDA = VALORES_FIRMWARE.n;
+    try { localStorage.removeItem("calibracion"); } catch (e) {}
+    toast("Constantes restauradas"); renderTodo(); renderCalib();
+  });
+}
+
+$("cTabla").addEventListener("click", function (ev) {
+  const b = ev.target.closest("button[data-borrar]"); if (!b) return;
+  puntos.splice(parseInt(b.getAttribute("data-borrar"), 10), 1);
+  renderCalib();
+});
+
+cargarTags();
+actualizarLecturas();
+(function () { const h = new Date().getHours(); $("saludo").textContent = h < 12 ? "Buenos días" : h < 19 ? "Buenas tardes" : "Buenas noches"; })();
+setInterval(actualizarLecturas, 2000);
+setInterval(cargarTags, 15000);   // por si cambian algo desde la app
+</script>
+</body>
+</html>
